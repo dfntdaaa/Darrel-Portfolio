@@ -1,11 +1,14 @@
 
 document.addEventListener("DOMContentLoaded", () => {
+    "use strict";
+
     // ========================================
     // ELEMENTS
     // ========================================
 
-    const main = document.querySelector("main");
     const header = document.querySelector(".header");
+    const main = document.querySelector("main");
+
     const sections = document.querySelectorAll(
         "main section[id]"
     );
@@ -20,12 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const yearElement = document.getElementById("year");
 
     const mobileQuery = window.matchMedia("(max-width: 768px)");
+
     const reduceMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
     ).matches;
 
     // ========================================
-    // FOOTER YEAR
+    // CURRENT YEAR
     // ========================================
 
     if (yearElement) {
@@ -47,15 +51,16 @@ document.addEventListener("DOMContentLoaded", () => {
             "aria-label",
             "Open navigation menu"
         );
+
+        menuToggle.textContent = "☰";
     }
 
     if (menuToggle && navMenu) {
-        menuToggle.setAttribute("aria-expanded", "false");
-
         menuToggle.addEventListener("click", () => {
             const isOpen = navMenu.classList.toggle("active");
 
             menuToggle.classList.toggle("active", isOpen);
+
             menuToggle.setAttribute(
                 "aria-expanded",
                 String(isOpen)
@@ -67,6 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? "Close navigation menu"
                     : "Open navigation menu"
             );
+
+            menuToggle.textContent = isOpen ? "✕" : "☰";
         });
 
         navLinks.forEach(link => {
@@ -91,13 +98,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ========================================
-    // SECTION NAVIGATION
+    // ACTIVE NAVIGATION LINK
     // ========================================
 
     function setActiveLink(sectionId) {
         navLinks.forEach(link => {
-            const isActive =
-                link.getAttribute("href") === `#${sectionId}`;
+            const href = link.getAttribute("href");
+            const isActive = href === `#${sectionId}`;
 
             link.classList.toggle("active", isActive);
 
@@ -109,14 +116,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // ========================================
+    // SECTION NAVIGATION
+    // ========================================
+
     function scrollToSection(target) {
         if (!target) return;
 
-        if (mobileQuery.matches) {
-            const headerHeight = header
-                ? header.offsetHeight
-                : 0;
+        const headerHeight = header
+            ? header.offsetHeight
+            : 0;
 
+        if (mobileQuery.matches) {
             const targetPosition =
                 window.scrollY +
                 target.getBoundingClientRect().top -
@@ -124,11 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             window.scrollTo({
                 top: Math.max(0, targetPosition),
-                behavior: reduceMotion ? "auto" : "smooth"
-            });
-        } else if (main && main.contains(target)) {
-            main.scrollTo({
-                left: target.offsetLeft,
                 behavior: reduceMotion ? "auto" : "smooth"
             });
         } else {
@@ -145,109 +151,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!href || !href.startsWith("#")) return;
 
-            const target = document.querySelector(href);
+            const target = document.getElementById(
+                href.substring(1)
+            );
 
             if (!target) return;
 
             event.preventDefault();
 
             scrollToSection(target);
-
-            if (target.id) {
-                setActiveLink(target.id);
-            }
-
+            setActiveLink(target.id);
             closeMobileMenu();
+
+            if (window.location.hash !== href) {
+                history.replaceState(null, "", href);
+            }
         });
     });
 
     // ========================================
-    // OPEN THE LINKED SECTION ON PAGE LOAD
+    // OPEN SECTION FROM URL HASH
     // ========================================
 
     function openInitialSection() {
         const hash = window.location.hash;
 
-        if (!hash) {
+        if (!hash || hash === "#") {
             setActiveLink("home");
             return;
         }
 
-        let target;
+        const target = document.getElementById(
+            hash.substring(1)
+        );
 
-        try {
-            target = document.querySelector(hash);
-        } catch (error) {
-            target = null;
+        if (!target) {
+            setActiveLink("home");
+            return;
         }
-
-        if (!target) return;
 
         requestAnimationFrame(() => {
             scrollToSection(target);
-
-            if (target.id) {
-                setActiveLink(target.id);
-            }
+            setActiveLink(target.id);
         });
     }
 
     openInitialSection();
 
     // ========================================
-    // TRACK THE ACTIVE SECTION
+    // TRACK CURRENT SECTION WHILE SCROLLING
     // ========================================
 
     function updateActiveSection() {
         if (!sections.length) return;
 
+        const headerHeight = header
+            ? header.offsetHeight
+            : 0;
+
         let currentSection = sections[0];
-        let closestDistance = Infinity;
+        let smallestDistance = Infinity;
 
-        if (mobileQuery.matches) {
-            const headerHeight = header
-                ? header.offsetHeight
-                : 0;
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
 
-            sections.forEach(section => {
-                const rect = section.getBoundingClientRect();
+            const visibleHeight = Math.min(
+                rect.bottom,
+                window.innerHeight
+            ) - Math.max(rect.top, headerHeight);
 
-                const distance = Math.abs(
-                    rect.top - headerHeight
-                );
+            if (visibleHeight <= 0) return;
 
-                if (
-                    rect.bottom > headerHeight &&
-                    distance < closestDistance
-                ) {
-                    closestDistance = distance;
-                    currentSection = section;
-                }
-            });
-        } else if (main) {
-            sections.forEach(section => {
-                const distance = Math.abs(
-                    section.offsetLeft - main.scrollLeft
-                );
+            const distance = Math.abs(
+                rect.top - headerHeight
+            );
 
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    currentSection = section;
-                }
-            });
-        }
+            if (distance < smallestDistance) {
+                smallestDistance = distance;
+                currentSection = section;
+            }
+        });
 
         if (currentSection && currentSection.id) {
             setActiveLink(currentSection.id);
         }
-    }
-
-    if (main) {
-        main.addEventListener(
-            "scroll",
-            updateActiveSection,
-            { passive: true }
-        );
     }
 
     window.addEventListener(
@@ -260,18 +247,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // SCROLL-TO-TOP BUTTON
     // ========================================
 
-    function getScrollPosition() {
-        if (mobileQuery.matches) {
-            return window.scrollY;
-        }
-
-        return main ? main.scrollLeft : window.scrollY;
-    }
-
     function updateScrollTopButton() {
         if (!scrollTopButton) return;
 
-        const shouldShow = getScrollPosition() > 300;
+        const shouldShow = window.scrollY > 300;
 
         scrollTopButton.classList.toggle(
             "visible",
@@ -282,37 +261,19 @@ document.addEventListener("DOMContentLoaded", () => {
             "aria-hidden",
             String(!shouldShow)
         );
+
+        scrollTopButton.tabIndex = shouldShow ? 0 : -1;
     }
 
     if (scrollTopButton) {
         scrollTopButton.addEventListener("click", () => {
-            if (mobileQuery.matches) {
-                window.scrollTo({
-                    top: 0,
-                    behavior: reduceMotion ? "auto" : "smooth"
-                });
-            } else if (main) {
-                main.scrollTo({
-                    left: 0,
-                    behavior: reduceMotion ? "auto" : "smooth"
-                });
-            } else {
-                window.scrollTo({
-                    top: 0,
-                    behavior: reduceMotion ? "auto" : "smooth"
-                });
-            }
+            window.scrollTo({
+                top: 0,
+                behavior: reduceMotion ? "auto" : "smooth"
+            });
 
             setActiveLink("home");
         });
-    }
-
-    if (main) {
-        main.addEventListener(
-            "scroll",
-            updateScrollTopButton,
-            { passive: true }
-        );
     }
 
     window.addEventListener(
@@ -321,10 +282,8 @@ document.addEventListener("DOMContentLoaded", () => {
         { passive: true }
     );
 
-    updateScrollTopButton();
-
     // ========================================
-    // RESPONSIVE LAYOUT UPDATES
+    // RESIZE HANDLING
     // ========================================
 
     function handleResize() {
@@ -333,13 +292,13 @@ document.addEventListener("DOMContentLoaded", () => {
         updateScrollTopButton();
     }
 
+    window.addEventListener("resize", handleResize);
+
     if (mobileQuery.addEventListener) {
         mobileQuery.addEventListener("change", handleResize);
     } else {
         mobileQuery.addListener(handleResize);
     }
-
-    window.addEventListener("resize", handleResize);
 
     // ========================================
     // REVEAL ANIMATIONS
@@ -386,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ========================================
-    // PROFILE IMAGE FALLBACK
+    // PROFILE IMAGE ERROR HANDLING
     // ========================================
 
     const profileImage = document.querySelector(
@@ -399,7 +358,10 @@ document.addEventListener("DOMContentLoaded", () => {
             profileImage.alt = "Profile photo unavailable";
         }
 
-        profileImage.addEventListener("error", handleImageError);
+        profileImage.addEventListener(
+            "error",
+            handleImageError
+        );
 
         if (
             profileImage.complete &&
@@ -410,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ========================================
-    // SOCIAL LINKS
+    // SOCIAL MEDIA LINKS
     // ========================================
 
     document.querySelectorAll(
@@ -428,16 +390,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ========================================
-    // EMAIL BUTTON
+    // EMAIL LINKS
     // ========================================
 
-    const emailLinks = document.querySelectorAll(
+    document.querySelectorAll(
         'a[href*="darrel.gunnacao21@gmail.com"]'
-    );
-
-    emailLinks.forEach(link => {
+    ).forEach(link => {
         link.setAttribute("target", "_blank");
-        link.setAttribute("rel", "noopener noreferrer");
+        link.setAttribute(
+            "rel",
+            "noopener noreferrer"
+        );
     });
 
     // ========================================
@@ -448,4 +411,5 @@ document.addEventListener("DOMContentLoaded", () => {
         updateActiveSection();
         updateScrollTopButton();
     });
+
 });
