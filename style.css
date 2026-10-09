@@ -27,13 +27,15 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 85px;
 }
 
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: var(--bg);
     color: var(--white);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     line-height: 1.6;
 }
 
@@ -135,40 +137,26 @@ footer h3 span {
 
 
 /* ========================================
-   HORIZONTAL PAGE NAVIGATION
+   MAIN AND VERTICAL SECTIONS
 ======================================== */
 
 main {
-    display: flex;
+    display: block;
     width: 100%;
-    height: 100vh;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
-}
-
-main::-webkit-scrollbar {
-    display: none;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
 }
 
 .hero,
 .section,
 .contact-section {
     position: relative;
-    flex: 0 0 100%;
     width: 100%;
-    height: 100%;
-    min-width: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    padding: 120px 8% 60px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    min-height: 100vh;
+    height: auto;
+    padding: 120px 8% 70px;
+    scroll-margin-top: 80px;
 }
 
 
@@ -777,6 +765,9 @@ main::-webkit-scrollbar {
     width: 100%;
     max-width: 850px;
     margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .contact-container h2 {
@@ -857,23 +848,18 @@ main::-webkit-scrollbar {
 
 
 /* ========================================
-   SOCIAL ICONS - BOTTOM RIGHT
+   SOCIAL ICONS DIRECTLY BELOW EMAIL BUTTON
 ======================================== */
 
-.contact-section {
-    position: relative;
-}
-
 .contact-social-links {
-    position: absolute;
-    right: 30px;
-    bottom: 25px;
+    position: static;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    z-index: 20;
+    gap: 15px;
+    margin-top: 22px;
+    width: 100%;
 }
 
 .contact-social-links .social-circle {
@@ -891,7 +877,8 @@ main::-webkit-scrollbar {
     transition:
         background 0.3s ease,
         color 0.3s ease,
-        transform 0.3s ease;
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .contact-social-links .social-circle svg {
@@ -904,6 +891,7 @@ main::-webkit-scrollbar {
     background: var(--blue);
     color: #ffffff;
     transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(2, 132, 199, 0.2);
 }
 
 
@@ -945,6 +933,10 @@ footer {
     cursor: pointer;
     z-index: 900;
     transition: background var(--transition), color var(--transition);
+}
+
+.scroll-top.visible {
+    display: flex;
 }
 
 .scroll-top:hover {
@@ -1002,10 +994,6 @@ footer {
 ======================================== */
 
 @media (max-width: 768px) {
-    body {
-        overflow: auto;
-    }
-
     .header {
         height: 70px;
     }
@@ -1050,24 +1038,10 @@ footer {
         font-size: 14px;
     }
 
-    main {
-        display: block;
-        width: 100%;
-        height: auto;
-        min-height: 100vh;
-        overflow: visible;
-        scroll-snap-type: none;
-    }
-
     .hero,
     .section,
     .contact-section {
-        flex: none;
-        width: 100%;
-        height: auto;
         min-height: 100vh;
-        overflow: visible;
-        scroll-snap-align: none;
         padding: 100px 7% 65px;
     }
 
@@ -1168,16 +1142,8 @@ footer {
     }
 
     .contact-section {
-        display: flex;
-        flex-direction: column;
         justify-content: center;
-        align-items: stretch;
-        gap: 35px;
-        padding-bottom: 110px;
-    }
-
-    .contact-container {
-        margin: auto;
+        padding-bottom: 65px;
     }
 
     .contact-container h2 {
@@ -1196,25 +1162,10 @@ footer {
         max-width: 100%;
     }
 
-    /* Keep the icons at the bottom-right on mobile */
     .contact-social-links {
-        position: absolute;
-        right: 20px;
-        bottom: 20px;
-        align-self: auto;
-        margin-top: 0;
-        gap: 10px;
-    }
-
-    .contact-social-links .social-circle {
-        width: 42px;
-        height: 42px;
-        flex-basis: 42px;
-    }
-
-    .contact-social-links .social-circle svg {
-        width: 20px;
-        height: 20px;
+        position: static;
+        justify-content: center;
+        margin-top: 22px;
     }
 
     .scroll-top {
@@ -1286,20 +1237,23 @@ footer {
         font-size: 10px;
     }
 
-    .contact-section {
-        padding-bottom: 100px;
+    .contact-container h2 {
+        font-size: 40px;
     }
 
     .contact-social-links {
-        right: 15px;
-        bottom: 15px;
-        gap: 8px;
+        gap: 12px;
     }
 
     .contact-social-links .social-circle {
-        width: 40px;
-        height: 40px;
-        flex-basis: 40px;
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+    }
+
+    .contact-social-links .social-circle svg {
+        width: 20px;
+        height: 20px;
     }
 }
 
@@ -1328,6 +1282,7 @@ button:focus-visible {
     }
 }
 
+
 /* ========================================
    REVEAL ANIMATIONS
 ======================================== */
@@ -1350,43 +1305,4 @@ button:focus-visible {
         transform: none;
         transition: none;
     }
-}
-
-/* SOCIAL ICONS BELOW EMAIL BUTTON */
-
-.contact-social-links {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    position: static;
-}
-
-.contact-social-links a {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 44px;
-    height: 44px;
-    color: #087ea4;
-    background: #ffffff;
-    border: 2px solid #38bdf8;
-    border-radius: 50%;
-    text-decoration: none;
-    transition: all 0.25s ease;
-}
-
-.contact-social-links a svg {
-    width: 21px;
-    height: 21px;
-    display: block;
-}
-
-.contact-social-links a:hover {
-    color: #ffffff;
-    background: #0284c7;
-    border-color: #0284c7;
-    transform: translateY(-4px);
-    box-shadow: 0 6px 15px rgba(2, 132, 199, 0.2);
 }
