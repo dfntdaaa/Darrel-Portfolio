@@ -1,5 +1,6 @@
+
 /* ========================================
-   RESET & VARIABLES
+   RESET AND VARIABLES
 ======================================== */
 
 * {
@@ -13,18 +14,14 @@
     --bg-secondary: #e6f4ff;
     --card: #ffffff;
     --card-light: #f0f9ff;
-
     --blue: #0284c7;
     --blue-dark: #0369a1;
     --blue-light: #38bdf8;
-
     --white: #102a43;
     --gray: #526b80;
     --gray-light: #344f66;
-
     --border: rgba(2, 132, 199, 0.18);
     --shadow: 0 15px 40px rgba(2, 132, 199, 0.09);
-
     --transition: 0.3s ease;
 }
 
@@ -50,7 +47,7 @@ button {
 
 
 /* ========================================
-   HEADER & NAVIGATION
+   HEADER AND NAVIGATION
 ======================================== */
 
 .header {
@@ -125,11 +122,6 @@ footer h3 span {
 .nav-links a.active::after {
     width: 100%;
 }
-
-
-/* ========================================
-   MOBILE MENU BUTTON
-======================================== */
 
 .menu-toggle {
     display: none;
@@ -217,6 +209,7 @@ main::-webkit-scrollbar {
     line-height: 1.05;
     font-weight: 800;
     letter-spacing: -3px;
+    overflow-wrap: anywhere;
     margin-bottom: 24px;
 }
 
@@ -293,11 +286,6 @@ main::-webkit-scrollbar {
     color: var(--blue);
     transform: translateY(-3px);
 }
-
-
-/* ========================================
-   QUICK CONTACT
-======================================== */
 
 .quick-contact {
     display: flex;
@@ -841,11 +829,6 @@ main::-webkit-scrollbar {
     font-weight: 700;
 }
 
-
-/* ========================================
-   SEND EMAIL BUTTON
-======================================== */
-
 .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -873,7 +856,9 @@ main::-webkit-scrollbar {
 }
 
 
-/* SOCIAL MEDIA ICONS - BOTTOM RIGHT OF CONTACTS */
+/* ========================================
+   SOCIAL ICONS - BOTTOM RIGHT
+======================================== */
 
 .contact-section {
     position: relative;
@@ -884,36 +869,43 @@ main::-webkit-scrollbar {
     right: 30px;
     bottom: 25px;
     display: flex;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 12px;
-    z-index: 10;
+    z-index: 20;
 }
 
 .contact-social-links .social-circle {
     width: 45px;
     height: 45px;
+    flex: 0 0 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #0284c7;
+    border: 2px solid var(--blue);
     border-radius: 50%;
-    color: #0284c7;
     background: #ffffff;
+    color: var(--blue);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition:
+        background 0.3s ease,
+        color 0.3s ease,
+        transform 0.3s ease;
 }
 
 .contact-social-links .social-circle svg {
+    display: block;
     width: 22px;
     height: 22px;
-    fill: currentColor;
 }
 
 .contact-social-links .social-circle:hover {
-    background: #0284c7;
+    background: var(--blue);
     color: #ffffff;
     transform: translateY(-4px);
 }
+
 
 /* ========================================
    FOOTER
@@ -1006,7 +998,7 @@ footer {
 
 
 /* ========================================
-   TABLETS & MOBILE
+   TABLETS AND MOBILE
 ======================================== */
 
 @media (max-width: 768px) {
@@ -1070,6 +1062,7 @@ footer {
     .hero,
     .section,
     .contact-section {
+        flex: none;
         width: 100%;
         height: auto;
         min-height: 100vh;
@@ -1180,6 +1173,7 @@ footer {
         justify-content: center;
         align-items: stretch;
         gap: 35px;
+        padding-bottom: 110px;
     }
 
     .contact-container {
@@ -1202,10 +1196,25 @@ footer {
         max-width: 100%;
     }
 
+    /* Keep the icons at the bottom-right on mobile */
     .contact-social-links {
-        position: static;
-        align-self: center;
-        margin-top: 10px;
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        align-self: auto;
+        margin-top: 0;
+        gap: 10px;
+    }
+
+    .contact-social-links .social-circle {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+    }
+
+    .contact-social-links .social-circle svg {
+        width: 20px;
+        height: 20px;
     }
 
     .scroll-top {
@@ -1277,14 +1286,20 @@ footer {
         font-size: 10px;
     }
 
+    .contact-section {
+        padding-bottom: 100px;
+    }
+
     .contact-social-links {
-        gap: 10px;
+        right: 15px;
+        bottom: 15px;
+        gap: 8px;
     }
 
     .contact-social-links .social-circle {
-        width: 44px;
-        height: 44px;
-        flex-basis: 44px;
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
     }
 }
 
