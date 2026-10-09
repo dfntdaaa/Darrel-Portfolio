@@ -1351,3 +1351,42 @@ button:focus-visible {
         transition: none;
     }
 }
+
+/* SOCIAL ICONS BELOW EMAIL BUTTON */
+
+.contact-social-links {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    position: static;
+}
+
+.contact-social-links a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    color: #087ea4;
+    background: #ffffff;
+    border: 2px solid #38bdf8;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.contact-social-links a svg {
+    width: 21px;
+    height: 21px;
+    display: block;
+}
+
+.contact-social-links a:hover {
+    color: #ffffff;
+    background: #0284c7;
+    border-color: #0284c7;
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(2, 132, 199, 0.2);
+}
