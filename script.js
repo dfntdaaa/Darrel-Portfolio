@@ -1,200 +1,270 @@
-document.addEventListener("DOMContentLoaded", () => {
-const main = document.querySelector("main");
-const sections = document.querySelectorAll("main > section");
-const navLinks = document.querySelectorAll(".nav-links a");
-const menuToggle = document.getElementById("menu-toggle");
-const navMenu = document.getElementById("nav-links");
-const scrollTopButton = document.getElementById("scroll-top");
-const yearElement = document.getElementById("year");
 
-```
-// Update copyright year
-if (yearElement) {
-    yearElement.textContent = new Date().getFullYear();
-}
+document.addEventListener("DOMContentLoaded", function () {
+    // ========================================
+    // ELEMENTS
+    // ========================================
+    const header = document.querySelector(".header");
+    const menuToggle = document.getElementById("menu-toggle");
+    const navMenu = document.getElementById("nav-links");
+    const navLinks = document.querySelectorAll(".nav-links a");
+    const sections = document.querySelectorAll("main section[id]");
+    const scrollTopButton = document.getElementById("scroll-top");
+    const yearElement = document.getElementById("year");
 
-// Navigate between horizontal sections
-function navigateToSection(targetSection) {
-    if (!main || !targetSection) return;
+    // ========================================
+    // AUTOMATIC FOOTER YEAR
+    // ========================================
+    if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+    }
 
-    main.scrollTo({
-        left: targetSection.offsetLeft,
-        behavior: "smooth"
-    });
+    // ========================================
+    // MOBILE NAVIGATION MENU
+    // ========================================
+    function closeMenu() {
+        if (!menuToggle || !navMenu) return;
 
-    closeMobileMenu();
-}
-
-// Close mobile navigation menu
-function closeMobileMenu() {
-    if (navMenu) {
         navMenu.classList.remove("active");
-    }
-
-    if (menuToggle) {
         menuToggle.setAttribute("aria-expanded", "false");
+        menuToggle.setAttribute("aria-label", "Open navigation menu");
+        menuToggle.textContent = "☰";
+    }
+
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener("click", function () {
+            const isOpen = navMenu.classList.toggle("active");
+
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuToggle.setAttribute(
+                "aria-label",
+                isOpen ? "Close navigation menu" : "Open navigation menu"
+            );
+            menuToggle.textContent = isOpen ? "✕" : "☰";
+        });
+
+        // Close the menu after selecting a navigation link.
+        navLinks.forEach(function (link) {
+            link.addEventListener("click", function () {
+                closeMenu();
+            });
+        });
+
+        // Close the menu when clicking outside it.
+        document.addEventListener("click", function (event) {
+            const clickedInsideMenu = navMenu.contains(event.target);
+            const clickedToggle = menuToggle.contains(event.target);
+
+            if (!clickedInsideMenu && !clickedToggle) {
+                closeMenu();
+            }
+        });
+
+        // Close the menu with the Escape key.
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeMenu();
+                menuToggle.focus();
+            }
+        });
+
+        // Reset the mobile menu when returning to desktop layout.
+        window.addEventListener("resize", function () {
+            if (window.innerWidth > 768) {
+                closeMenu();
+            }
+        });
+    }
+
+    // ========================================
+    // SMOOTH VERTICAL NAVIGATION
+    // ========================================
+    navLinks.forEach(function (link) {
+        link.addEventListener("click", function (event) {
+            const targetId = link.getAttribute("href");
+
+            if (!targetId || !targetId.startsWith("#")) return;
+
+            const targetSection = document.querySelector(targetId);
+
+            if (targetSection) {
+                event.preventDefault();
+
+                const headerHeight = header
+                    ? header.offsetHeight
+                    : 0;
+
+                const targetPosition =
+                    targetSection.getBoundingClientRect().top +
+                    window.scrollY -
+                    headerHeight;
+
+                window.scrollTo({
+                    top: Math.max(0, targetPosition),
+                    behavior: "smooth"
+                });
+
+                // Update the URL hash without jumping horizontally.
+                if (window.location.hash !== targetId) {
+                    history.pushState(null, "", targetId);
+                }
+            }
+        });
+    });
+
+    // ========================================
+    // ACTIVE NAVIGATION LINK
+    // ========================================
+    function updateActiveLink() {
+        let currentSection = "home";
+        const scrollPosition = window.scrollY;
+        const headerHeight = header ? header.offsetHeight : 0;
+
+        sections.forEach(function (section) {
+            const sectionTop =
+                section.getBoundingClientRect().top + window.scrollY;
+
+            if (scrollPosition + headerHeight + 100 >= sectionTop) {
+                currentSection = section.id;
+            }
+        });
+
+        navLinks.forEach(function (link) {
+            const linkTarget = link.getAttribute("href");
+            const isActive = linkTarget === "#" + currentSection;
+
+            link.classList.toggle("active", isActive);
+
+            if (isActive) {
+                link.setAttribute("aria-current", "location");
+            } else {
+                link.removeAttribute("aria-current");
+            }
+        });
+    }
+
+    // ========================================
+    // SCROLL-TO-TOP BUTTON
+    // ========================================
+    function updateScrollTopButton() {
+        if (!scrollTopButton) return;
+
+        scrollTopButton.style.display =
+            window.scrollY > 400 ? "flex" : "none";
+
+        scrollTopButton.style.alignItems = "center";
+        scrollTopButton.style.justifyContent = "center";
+    }
+
+    if (scrollTopButton) {
+        scrollTopButton.addEventListener("click", function () {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    }
+
+    // ========================================
+    // CLICKABLE SUMMARY CARDS
+    // ========================================
+    const summaryCards = document.querySelectorAll(".summary-card");
+
+    summaryCards.forEach(function (card) {
+        const description = card.querySelector(".summary-description");
+
+        if (!description) return;
+
+        // Set the initial hidden state.
+        card.classList.remove("active");
+        card.setAttribute("aria-expanded", "false");
+        card.setAttribute("role", "button");
+        card.setAttribute("tabindex", "0");
+
+        
+function toggleCard() {
+    const isOpen = card.classList.toggle("active");
+    card.setAttribute("aria-expanded", String(isOpen));
+
+    const footerText = card.querySelector(".summary-card-footer span");
+    const arrow = card.querySelector(".summary-arrow");
+
+    if (footerText) {
+        footerText.textContent = isOpen
+            ? "Hide description"
+            : "View description";
+    }
+
+    if (arrow) {
+        arrow.textContent = isOpen ? "↑" : "↓";
     }
 }
 
-// Handle navigation links
-navLinks.forEach((link) => {
-    link.addEventListener("click", (event) => {
-        const targetId = link.getAttribute("href");
 
-        if (!targetId || !targetId.startsWith("#")) return;
+        // Open or close the description when clicked.
+        card.addEventListener("click", function () {
+            toggleCard();
+        });
 
-        const targetSection = document.querySelector(targetId);
-
-        if (targetSection) {
-            event.preventDefault();
-            navigateToSection(targetSection);
-        }
-    });
-});
-
-// Mobile menu toggle
-if (menuToggle && navMenu) {
-    menuToggle.setAttribute("aria-expanded", "false");
-
-    menuToggle.addEventListener("click", (event) => {
-        event.stopPropagation();
-
-        const isOpen = navMenu.classList.toggle("active");
-        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        // Allow keyboard users to open or close the card.
+        card.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                toggleCard();
+            }
+        });
     });
 
-    document.addEventListener("click", (event) => {
-        if (
-            !menuToggle.contains(event.target) &&
-            !navMenu.contains(event.target)
-        ) {
-            closeMobileMenu();
-        }
-    });
+    // ========================================
+    // SCROLL EVENTS
+    // ========================================
+    let ticking = false;
 
-    navMenu.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", closeMobileMenu);
-    });
-}
+    function handleScroll() {
+        if (ticking) return;
 
-// Highlight the current section in the navigation
-function updateActiveNavigation() {
-    if (!main || sections.length === 0) return;
+        ticking = true;
 
-    const mainCenter = main.scrollLeft + main.clientWidth / 2;
-    let closestSection = null;
-    let smallestDistance = Infinity;
+        window.requestAnimationFrame(function () {
+            updateActiveLink();
+            updateScrollTopButton();
+            ticking = false;
+        });
+    }
 
-    sections.forEach((section) => {
-        const sectionCenter =
-            section.offsetLeft + section.offsetWidth / 2;
-
-        const distance = Math.abs(sectionCenter - mainCenter);
-
-        if (distance < smallestDistance) {
-            smallestDistance = distance;
-            closestSection = section;
-        }
-    });
-
-    if (!closestSection) return;
-
-    navLinks.forEach((link) => {
-        const active =
-            link.getAttribute("href") === `#${closestSection.id}`;
-
-        link.classList.toggle("active", active);
-
-        if (active) {
-            link.setAttribute("aria-current", "page");
-        } else {
-            link.removeAttribute("aria-current");
-        }
-    });
-}
-
-// Update navigation when scrolling or resizing
-if (main) {
-    main.addEventListener("scroll", updateActiveNavigation, {
+    window.addEventListener("scroll", handleScroll, {
         passive: true
     });
 
-    window.addEventListener("resize", updateActiveNavigation);
-}
+    // ========================================
+    // INITIAL PAGE STATE
+    // ========================================
+    updateActiveLink();
+    updateScrollTopButton();
 
-// Scroll-to-top button, if present in the HTML
-if (scrollTopButton && sections.length > 0) {
-    scrollTopButton.addEventListener("click", () => {
-        navigateToSection(sections[0]);
-    });
-}
-
-// Keyboard navigation between sections
-document.addEventListener("keydown", (event) => {
-    if (!main || sections.length === 0) return;
-
-    const activeElement = document.activeElement;
-
-    const isTyping =
-        activeElement &&
-        (
-            activeElement.tagName === "INPUT" ||
-            activeElement.tagName === "TEXTAREA" ||
-            activeElement.isContentEditable
+    // Correctly position a section if the page opens with a URL hash.
+    if (window.location.hash) {
+        const initialTarget = document.querySelector(
+            window.location.hash
         );
 
-    if (isTyping || event.altKey || event.ctrlKey || event.metaKey) {
-        return;
-    }
+        if (initialTarget) {
+            window.requestAnimationFrame(function () {
+                const headerHeight = header
+                    ? header.offsetHeight
+                    : 0;
 
-    let currentIndex = 0;
-    let closestDistance = Infinity;
+                const targetPosition =
+                    initialTarget.getBoundingClientRect().top +
+                    window.scrollY -
+                    headerHeight;
 
-    sections.forEach((section, index) => {
-        const distance = Math.abs(section.offsetLeft - main.scrollLeft);
+                window.scrollTo({
+                    top: Math.max(0, targetPosition),
+                    behavior: "auto"
+                });
 
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            currentIndex = index;
+                updateActiveLink();
+            });
         }
-    });
-
-    if (event.key === "ArrowRight") {
-        event.preventDefault();
-
-        const nextIndex = Math.min(
-            currentIndex + 1,
-            sections.length - 1
-        );
-
-        navigateToSection(sections[nextIndex]);
     }
-
-    if (event.key === "ArrowLeft") {
-        event.preventDefault();
-
-        const previousIndex = Math.max(currentIndex - 1, 0);
-
-        navigateToSection(sections[previousIndex]);
-    }
-
-    if (event.key === "Home") {
-        event.preventDefault();
-        navigateToSection(sections[0]);
-    }
-
-    if (event.key === "End") {
-        event.preventDefault();
-        navigateToSection(sections[sections.length - 1]);
-    }
-
-    if (event.key === "Escape") {
-        closeMobileMenu();
-    }
-});
-
-// Initialize the active navigation link
-updateActiveNavigation();
-```
-
 });
